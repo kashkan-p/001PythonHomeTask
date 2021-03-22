@@ -42,6 +42,7 @@ class RabotaByParser:
 
     @staticmethod
     def count_word_occurrences(data_list, str1, str2, str3):
+        """This method counts occurrences of given word in every vacancy's description"""
         counted = {}
         vacancy_num = 1
         for item in data_list:
@@ -54,6 +55,7 @@ class RabotaByParser:
 
     @staticmethod
     def count_average_word_occurrence(data_list, str1, str2, str3):
+        """This method counts average occurrences count of given word in a whole search query"""
         str1_counted = 0
         str2_counted = 0
         str3_counted = 0
