@@ -1,6 +1,6 @@
-from models.rabotabyparser import RabotaByParser
-from http_client.httpclient import HttpClient
-from utils.utils import get_flat_list, count_word_occurrences, count_average_word_occurrence
+from models.rabota_by_parser import RabotaByParser
+from clients.http_client import HttpClient
+
 
 URL = 'https://rabota.by/search/vacancy'
 KEYWORD = "python"
@@ -14,24 +14,24 @@ if __name__ == '__main__':
     parser = RabotaByParser()
 
     # Getting the first search page html code
-    start_page = client.get_html(URL, params=PARAMS, header=HEADER)
+    start_page = client.get(URL, params=PARAMS, header=HEADER).text
     # Getting numbers of pages of a search query
-    pages_range = parser.get_page_numbers(start_page)
+    last_page = parser.get_last_page_number(start_page)
 
     # Getting the list of vacancy urls on an every search page
     vacancy_urls = []
-    for number in range(pages_range["first"], pages_range["last"]):
+    for number in range(parser.FIRST_PAGE_NUMBER, last_page):
         PARAMS["page"] = number
-        page = client.get_html(URL, params=PARAMS, header=HEADER)
+        page = client.get(URL, params=PARAMS, header=HEADER).text
         vacancy_urls.append(parser.parse_vacancy_hrefs(page))
 
     # Merging all urls to one flat list
-    all_vacancies_urls = get_flat_list(vacancy_urls)
+    all_vacancies_urls = parser.get_flat_list(vacancy_urls)
 
     # Getting html code of every vacancy page and adding it to a list
     vacancy_description_raw = []
     for vacancy_url in all_vacancies_urls:
-        vacancy_description_raw.append(client.get_html(vacancy_url, header=HEADER))
+        vacancy_description_raw.append(client.get(vacancy_url, header=HEADER).text)
 
     # Parsing vacancy title and description and adding it to a list
     vacancies_parsed = []
@@ -40,6 +40,6 @@ if __name__ == '__main__':
         vacancies_parsed.append(parsed)
 
     # Counting occurrences of the given words in each vacancy description
-    counted = count_word_occurrences(vacancies_parsed, "python", "linux", "flask")
+    counted = parser.count_word_occurrences(vacancies_parsed, "python", "linux", "flask")
     # Counting average occurrences of the given words
-    avg_occurrence = count_average_word_occurrence(vacancies_parsed, "python", "linux", "flask")
+    avg_occurrence = parser.count_average_word_occurrence(vacancies_parsed, "python", "linux", "flask")
